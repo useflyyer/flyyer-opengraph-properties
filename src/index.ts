@@ -1,5 +1,8 @@
+/* eslint-disable no-prototype-builtins */
+
+import get from "lodash/get";
+import isNil from "lodash/isNil";
 import last from "lodash/last";
-import set from "lodash/set";
 import pluralize from "pluralize";
 
 const irregulars: [string, string][] = [["audio", "audios"]];
@@ -10,27 +13,62 @@ for (const [singular, plural] of irregulars) {
 interface KeyValue {
   [index: string]: any;
 }
-export class OpenGraphProperty<T = any> implements KeyValue {
-  constructor(public $value?: T) {}
-  toString() {
-    return this.$value ?? "";
+
+export function extractDateTime(
+  property: OpenGraphProperty | null | undefined,
+  path?: string | number | (string | number)[],
+): Date | undefined {
+  const value = extractString(property, path);
+  return isNil(value) ? undefined : new Date(value);
+}
+
+export function extractURL(
+  property: OpenGraphProperty | null | undefined,
+  path?: string | number | (string | number)[],
+): URL | undefined {
+  const value = extractString(property, path);
+  return isNil(value) ? undefined : new URL(value);
+}
+
+export function extractNumber(
+  property: OpenGraphProperty | null | undefined,
+  path?: string | number | (string | number)[],
+): number | undefined {
+  const value = extractString(property, path);
+  return isNil(value) ? undefined : Number(value);
+}
+
+export function extractString(
+  property: OpenGraphProperty | null | undefined,
+  path?: string | number | (string | number)[],
+): string | undefined {
+  if (isNil(property)) {
+    return undefined;
+  } else if (isNil(path)) {
+    const value = property.$value;
+    return isNil(value) ? undefined : String(value);
+  } else {
+    const leaf = get(property, path);
+    return isNil(leaf) ? undefined : extractString(leaf);
   }
 }
 
-export class OpenGraphNamespace {
-  constructor(
-    public name: string,
-    public readonly data: Record<string, OpenGraphProperty | OpenGraphProperty[]> = {},
-  ) {}
+export class OpenGraphProperty<T = any> implements KeyValue {
+  constructor(public $value?: T, public readonly data: Record<string, OpenGraphProperty | OpenGraphProperty[]> = {}) {}
 
   /**
    * Compatibility with https://liquidjs.com/api/interfaces/context_scope_.plainobject.html#Optional-toLiquid
    */
-  toLiquid() {
+  toLiquid = () => {
     return this.data;
-  }
+  };
 
-  push(root: string, properties: string[], content: any) {
+  toString = () => {
+    return this.$value;
+    // return this.$value ?? "";
+  };
+
+  push = (root: string, properties: string[], content: any) => {
     if (!root) return;
     const isRoot = properties.length === 0;
 
@@ -38,6 +76,7 @@ export class OpenGraphNamespace {
     const plural = pluralize(singular); // TODO: what happens if by mistake 'root' is plural, eg: og:images?
 
     if (isRoot) {
+      // @ts-ignore
       let value: OpenGraphProperty | undefined = this.data[singular];
       // @ts-ignore
       const values: OpenGraphProperty[] =
@@ -60,18 +99,33 @@ export class OpenGraphNamespace {
         value = new OpenGraphProperty();
         values.push(value);
       }
-      set(value, properties, new OpenGraphProperty(content));
+      const [property, ...moreProperties] = properties;
+      value.push(property!, moreProperties, content);
       this.data[plural] = values;
     }
-  }
+  };
 
-  seal() {
-    for (const key of Object.keys(this.data)) {
-      Object.defineProperty(this, key, {
-        get: () => this.data[key],
-      });
+  seal = () => {
+    for (const [key, value] of Object.entries(this.data)) {
+      if (Array.isArray(value)) {
+        for (const val of value) {
+          val.seal();
+        }
+      } else {
+        // Maybe is not necessary because is included in the arrays
+        value.seal();
+      }
+      // @ts-ignore
+      if (this.hasOwnProperty(key)) {
+        // Already defined.
+      } else {
+        Object.defineProperty(this, key, {
+          get: () => this.data[key],
+          enumerable: true, // TODO: true or false?
+        });
+      }
     }
-  }
+  };
 }
 
 export interface MetaTag {
@@ -80,8 +134,8 @@ export interface MetaTag {
   content?: string | null;
 }
 
-export function parse(metatags: MetaTag[]): Record<string, OpenGraphNamespace> {
-  const result: Record<string, OpenGraphNamespace> = {};
+export function parseMetaTags(metatags: MetaTag[]): Record<string, OpenGraphProperty> {
+  const result: Record<string, OpenGraphProperty> = {};
 
   for (const tag of metatags) {
     const content = tag.content;
@@ -91,7 +145,7 @@ export function parse(metatags: MetaTag[]): Record<string, OpenGraphNamespace> {
     if (!prefix || !root) continue;
 
     const namespaceKey = prefix.toLowerCase();
-    const namespace = result[namespaceKey] || new OpenGraphNamespace(namespaceKey);
+    const namespace = result[namespaceKey] || new OpenGraphProperty();
     namespace.push(root, properties, content);
     result[namespaceKey] = namespace;
   }
