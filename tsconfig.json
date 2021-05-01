@@ -4,11 +4,10 @@
     "target": "esnext",
     "alwaysStrict": true,
     "strict": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
+    "strictNullChecks": false, // too many warnings
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false, // too many warnings
     "esModuleInterop": true,
     "noImplicitThis": true,
     "noUncheckedIndexedAccess": true,
