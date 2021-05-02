@@ -112,6 +112,15 @@ describe("parse", () => {
       expect(print).toBeTruthy(); // TODO
     });
   });
+
+  it("normalizeKey and normalizeValue works", () => {
+    const tag: MetaTag = { name: "  twitter:TiTlE ", content: " ConTen t" };
+    const parsedNormalizedKey = parseMetaTags([tag], { normalizeKey: true });
+    expect(extractString(parsedNormalizedKey.twitter["title"])).toEqual(tag.content);
+
+    const parsedNormalizedValue = parseMetaTags([tag], { normalizeKey: true, normalizeValue: true });
+    expect(extractString(parsedNormalizedValue.twitter["title"])).toEqual("ConTen t");
+  });
 });
 
 class FlayyerLiquid extends Liquid {

@@ -134,14 +134,36 @@ export interface MetaTag {
   content?: string | null;
 }
 
-export function parseMetaTags(metatags: MetaTag[]): Record<string, OpenGraphProperty> {
+interface ParseMetaTagsOptions {
+  /**
+   * Convert `name` or `property` key to lowercase and trim whitespace.
+   */
+  normalizeKey?: boolean;
+
+  /**
+   * Trim white space from `content`.
+   */
+  normalizeValue?: boolean;
+}
+
+/**
+ * Convert meta-tags into a object with accessor. Supports single and multiple tags via pluralization.
+ */
+export function parseMetaTags(
+  metatags: MetaTag[],
+  { normalizeKey = false, normalizeValue = false }: ParseMetaTagsOptions = {},
+): Record<string, OpenGraphProperty> {
   const result: Record<string, OpenGraphProperty> = {};
 
   for (const tag of metatags) {
-    const content = tag.content;
+    let content = tag.content;
+    if (!isNil(content) && normalizeValue) {
+      content = content.trim();
+    }
+
     const key = tag["property"] || tag["name"];
     if (!key) continue;
-    const [prefix, root, ...properties] = key.split(":"); // eg: ["og", "image", "width"]
+    const [prefix, root, ...properties] = (normalizeKey ? key.trim().toLowerCase() : key).split(":"); // eg: ["og", "image", "width"]
     if (!prefix || !root) continue;
 
     const namespaceKey = prefix.toLowerCase();

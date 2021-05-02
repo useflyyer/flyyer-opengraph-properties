@@ -25,7 +25,12 @@ const raw = `
 
 const $ = cheerio.load(raw);
 const metatags: MetaTag[] = Array.from($("meta"), (meta) => meta.attribs);
-const parsed = parseMetaTags(metatags);
+const parsed = parseMetaTags(metatags, {
+  // Convert `name` or `property` key to lowercase and trim whitespace.
+  normalizeKey: true,
+  // Trim white space from `content`.
+  normalizeValue: true,
+});
 
 // First appearance take precedence.
 extractString(parsed.og["image"]) === "https://example.com/rock.jpg";
