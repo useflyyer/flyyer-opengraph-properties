@@ -97,7 +97,9 @@ export class OpenGraphProperty<T = any> implements KeyValue {
       let value = last(values);
       if (!value) {
         value = new OpenGraphProperty();
+        // Also add singular key
         values.push(value);
+        this.data[singular] = value;
       }
       const [property, ...moreProperties] = properties;
       value.push(property!, moreProperties, content);

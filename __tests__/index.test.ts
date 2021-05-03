@@ -121,6 +121,19 @@ describe("parse", () => {
     const parsedNormalizedValue = parseMetaTags([tag], { normalizeKey: true, normalizeValue: true });
     expect(extractString(parsedNormalizedValue.twitter["title"])).toEqual("ConTen t");
   });
+
+  it("gets nested value", () => {
+    const raw = `
+      <meta property="og:article:author" content="Patricio Lopez Juri" />
+    `;
+
+    const $ = cheerio.load(raw);
+    const metatags: MetaTag[] = Array.from($("meta"), (meta) => meta.attribs);
+    const parsed = parseMetaTags(metatags);
+    expect(extractString(parsed.og["articles"][0]["authors"][0])).toEqual("Patricio Lopez Juri");
+    expect(extractString(parsed.og["articles"][0]["author"])).toEqual("Patricio Lopez Juri");
+    expect(extractString(parsed.og["article"]["author"])).toEqual("Patricio Lopez Juri");
+  });
 });
 
 class FlayyerLiquid extends Liquid {
