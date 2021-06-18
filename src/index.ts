@@ -1,8 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 
-import get from "lodash/get";
-import isNil from "lodash/isNil";
-import last from "lodash/last";
+import { get, isNil, last } from "lodash";
 import pluralize from "pluralize";
 
 const irregulars: [string, string][] = [["audio", "audios"]];
