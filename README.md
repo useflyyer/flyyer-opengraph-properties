@@ -1,15 +1,15 @@
-# @flayyer/opengraph-properties
+# @flyyer/opengraph-properties
 
 Convert meta-tags into a object with accessor. Supports single and multiple tags via [pluralization](https://github.com/plurals/pluralize).
 
 ```sh
-yarn add @flayyer/opengraph-properties
+yarn add @flyyer/opengraph-properties
 ```
 
 ## Usage
 
 ```ts
-import { parseMetaTags, MetaTag, extractString, extractNumber } from "@flayyer/opengraph-properties";
+import { parseMetaTags, MetaTag, extractString, extractNumber } from "@flyyer/opengraph-properties";
 import * as cheerio from "cheerio";
 
 const raw = `
@@ -64,7 +64,7 @@ extractNumber(parsed.og, ["images", 2, "height"]) === 1000;
 Can be used with [liquidjs](https://github.com/harttle/liquidjs).
 
 ```ts
-import { parseMetaTags, MetaTag, extractString, extractNumber } from "@flayyer/opengraph-properties";
+import { parseMetaTags, MetaTag, extractString, extractNumber } from "@flyyer/opengraph-properties";
 import { Liquid } from "liquidjs";
 
 const metatags: MetaTag[] = [

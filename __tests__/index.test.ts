@@ -20,7 +20,7 @@ describe("parse", () => {
       const $ = cheerio.load(raw);
       const metatags: MetaTag[] = Array.from($("meta"), (meta) => meta.attribs);
       const parsed = parseMetaTags(metatags);
-      const engine = new FlayyerLiquid({
+      const engine = new FlyyerLiquid({
         globals: parsed,
       });
 
@@ -68,7 +68,7 @@ describe("parse", () => {
       const $ = cheerio.load(raw);
       const metatags: MetaTag[] = Array.from($("meta"), (meta) => meta.attribs);
       const parsed = parseMetaTags(metatags);
-      const engine = new FlayyerLiquid({
+      const engine = new FlyyerLiquid({
         globals: parsed,
       });
 
@@ -136,7 +136,7 @@ describe("parse", () => {
   });
 });
 
-class FlayyerLiquid extends Liquid {
+class FlyyerLiquid extends Liquid {
   static fs: FS = {
     resolve: function (...args: any[]) {
       throw new Error("You are not allowed to use the file system.");
@@ -144,12 +144,12 @@ class FlayyerLiquid extends Liquid {
   } as any;
 
   static DEFAULTS: LiquidOptions = {
-    fs: FlayyerLiquid.fs,
+    fs: FlyyerLiquid.fs,
     // trimTagLeft: true, // TODO: not sure
     trimTagRight: true, // TODO: not sure
   };
 
   constructor(options: LiquidOptions) {
-    super({ ...FlayyerLiquid.DEFAULTS, ...options });
+    super({ ...FlyyerLiquid.DEFAULTS, ...options });
   }
 }
